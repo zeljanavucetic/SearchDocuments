@@ -1,0 +1,11 @@
+com\similaritydoc\textrazor\TextRazorObject.class
+com\similaritydoc\Main.class
+inf_sistem\ServletInitializer.class
+com\similaritydoc\Functions.class
+com\similaritydoc\MongoDB.class
+com\similaritydoc\TopicModelMallet.class
+inf_sistem\NstApplication.class
+com\similaritydoc\MainDocument.class
+com\similaritydoc\textrazor\TextRazor.class
+inf_sistem\controller\SearchController.class
+com\similaritydoc\SimilarDocument.class
