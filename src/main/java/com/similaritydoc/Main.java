@@ -32,7 +32,7 @@ public class Main {
          
       //connect to mongo database
       MongoDB mongo = new MongoDB("192.168.0.17" , 27017);
-      //mongo.updateDocuments();
+      mongo.updateDocuments();
       List<MainDocument> documentsMongo = mongo.getDocuments();
        
          tro = Functions.createMainDictionary(documentsMongo);
