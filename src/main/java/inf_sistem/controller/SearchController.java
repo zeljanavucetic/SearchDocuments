@@ -16,9 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import org.bson.types.ObjectId;
 import org.springframework.web.servlet.ModelAndView;
-
+//zana
 /**
  *
  * @author DM
@@ -37,7 +37,7 @@ public class SearchController {
 	public @ResponseBody
 	List<MainDocument> getDocuments(@RequestParam("name") String name) throws IOException {
 
-		MongoDB db = new MongoDB("192.168.0.17" , 27017);
+		MongoDB db = new MongoDB();
 		List<MainDocument> result = db.getSearchResult(name);
                 
             return result;
@@ -47,7 +47,7 @@ public class SearchController {
     @RequestMapping("/GetSimilarDocuments")
 	public @ResponseBody
 	ModelAndView GetSimilarDocuments(@RequestParam("title") String title) throws IOException {
-		MongoDB db = new MongoDB("192.168.0.17" , 27017);
+		MongoDB db = new MongoDB();
 		Map<String, Object> map = new HashMap<>();
 		List<SimilarDocument> similarDocuments = db.getSimilarDocuments(title);
 		
