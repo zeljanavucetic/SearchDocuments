@@ -116,8 +116,9 @@
   <dependency>
     	<groupId>org.mongodb</groupId>
     	<artifactId>mongo-java-driver</artifactId>
-    	<version>3.0.4</version>
-    </dependency>           
+    	<version>3.4.2</version>
+   <type>jar</type>
+  </dependency>           
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
