@@ -4,21 +4,22 @@
  * and open the template in the editor.
  */
 package com.similaritydoc;
+import org.bson.types.ObjectId;
 
 /**
  *
  * @author DM
  */
-public class SimilarDocument {
+public class SimilarDocument  implements Comparable<SimilarDocument>{
     
-        private int num;
+        private ObjectId id;
 	private String title;
 	private String simTitle;
         private double similarity;
 	private String simContent;
         
-        public SimilarDocument (int num, String title, String simTitle, double similarity, String simContent){
-        this.num=num;
+        public SimilarDocument (ObjectId num, String title, String simTitle, double similarity, String simContent){
+        this.id=num;
         this.title=title;
         this.simTitle=simTitle;
         this.similarity=similarity;
@@ -85,15 +86,26 @@ public class SimilarDocument {
     /**
      * @return the num
      */
-    public int getNum() {
-        return num;
+    public ObjectId getId() {
+        return id;
     }
 
     /**
-     * @param num the num to set
+     * @param id the num to set
      */
-    public void setNum(int num) {
-        this.num = num;
+    public void setId(ObjectId id) {
+        this.id = id;
     }
+    
+    @Override
+    public int compareTo(SimilarDocument doc) {
+		if (this.similarity > doc.similarity) {
+            return -1;
+        } else if (this.similarity == doc.similarity) {
+            return 0;
+        } else {
+            return 1;
+        }
+	}
     
 }

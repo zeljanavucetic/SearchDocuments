@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class TextRazorObject {
 
-     public List<String> entities;
-     public List<String> topics;
+     private List<String> entities;
+     private List<String> topics;
      //list of entities of all documents
-     public List<List<String>> dictionaries;
+     private List<List<String>> dictionaries;
     
      public TextRazorObject (List<String> entities, List<String> topics, List<List<String>> dictionaries){
      this.entities = new ArrayList<String>();
@@ -28,4 +28,46 @@ public class TextRazorObject {
      this.dictionaries = new ArrayList<List<String>>();
      this.dictionaries = dictionaries;
      }
+
+    /**
+     * @return the entities
+     */
+    public List<String> getEntities() {
+        return entities;
+    }
+
+    /**
+     * @param entities the entities to set
+     */
+    public void setEntities(List<String> entities) {
+        this.entities = entities;
+    }
+
+    /**
+     * @return the topics
+     */
+    public List<String> getTopics() {
+        return topics;
+    }
+
+    /**
+     * @param topics the topics to set
+     */
+    public void setTopics(List<String> topics) {
+        this.topics = topics;
+    }
+
+    /**
+     * @return the dictionaries
+     */
+    public List<List<String>> getDictionaries() {
+        return dictionaries;
+    }
+
+    /**
+     * @param dictionaries the dictionaries to set
+     */
+    public void setDictionaries(List<List<String>> dictionaries) {
+        this.dictionaries = dictionaries;
+    }
 }

@@ -6,41 +6,40 @@
 package com.similaritydoc;
 
 import java.util.ArrayList;
+import org.bson.types.ObjectId;
 
 /**
  *
  * @author DM
  */
-public class MainDocument implements Comparable<MainDocument>{
+public class MainDocument{
     
-        private int num;
+        private ObjectId id;
 	private String title;
 	private String content;
-	private double similarity;
-        public ArrayList<String> entities = new ArrayList<String>();
-        public ArrayList<String> topics  = new ArrayList<String>();
+        private ArrayList<String> entities = new ArrayList<String>();
+        private ArrayList<String> topics  = new ArrayList<String>();
         
-        public MainDocument (int num, String title, String content, double similarity, ArrayList<String> entities, ArrayList<String> topics){
-        this.num = num;
+        public MainDocument (ObjectId num, String title, String content,  ArrayList<String> entities, ArrayList<String> topics){
+        this.id = num;
         this.title = title;
         this.content = content;
-        this.similarity = similarity;
         this.entities = entities;
         this.topics = topics;
         }
 
     /**
-     * @return the num
+     * @return the id
      */
-    public int getNum() {
-        return num;
+    public ObjectId getId() {
+        return id;
     }
 
     /**
-     * @param num the num to set
+     * @param id the id to set
      */
-    public void setNum(int num) {
-        this.num = num;
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 
     /**
@@ -72,30 +71,32 @@ public class MainDocument implements Comparable<MainDocument>{
     }
 
     /**
-     * @return the similarity
+     * @return the entities
      */
-    public double getSimilarity() {
-        return similarity;
+    public ArrayList<String> getEntities() {
+        return entities;
     }
 
     /**
-     * @param similarity the similarity to set
+     * @param entities the entities to set
      */
-    public void setSimilarity(double similarity) {
-        this.similarity = similarity;
+    public void setEntities(ArrayList<String> entities) {
+        this.entities = entities;
     }
-    
-    
-    @Override
-    public int compareTo(MainDocument doc) {
-		if (this.similarity > doc.similarity) {
-            return -1;
-        } else if (this.similarity == doc.similarity) {
-            return 0;
-        } else {
-            return 1;
-        }
-	}
+
+    /**
+     * @return the topics
+     */
+    public ArrayList<String> getTopics() {
+        return topics;
+    }
+
+    /**
+     * @param topics the topics to set
+     */
+    public void setTopics(ArrayList<String> topics) {
+        this.topics = topics;
+    }
         
         
 
