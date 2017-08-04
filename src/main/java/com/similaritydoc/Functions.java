@@ -5,25 +5,86 @@
  */
 package com.similaritydoc;
 
-import com.similaritydoc.textrazor.TextRazorObject;
+import com.similaritydoc.textrazor.AnalysisObject;
 import com.textrazor.AnalysisException;
 import com.textrazor.NetworkException;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.bson.Document;
+import org.json.JSONObject;
 /**
  *
  * @author DM
  */
 public class Functions {
+    
+    	public static String readUrl(String urlString) throws IOException {
+	    BufferedReader reader = null;
+	    try {
+	        URL url = new URL(urlString);
+	        
+	        reader = new BufferedReader(new InputStreamReader(url.openStream()));
+	        StringBuffer buffer = new StringBuffer();
+	        int read;
+	        char[] chars = new char[1024];
+	        while ((read = reader.read(chars)) != -1)
+	            buffer.append(chars, 0, read); 
+
+	        return buffer.toString();
+	    }
+	    
+	    catch (IOException e) {
+	    	return null;
+	    }
+	    
+	    finally {
+	        if (reader != null)
+	            reader.close();
+	    }
+	}
+    
+    //get keyphrases from text using KeyphrasesExtraction API
+    public static List<String> getKeyphrases(String text) throws FileNotFoundException, IOException{
+     
+        String address = "http://localhost:8081/KeyphrasesExtraction/api/hello";
+        
+        List<String> keyphrases = new ArrayList<String>();
+        
+        String query = String.format("text=%s", URLEncoder.encode(text, "UTF-8"));
+        
+                String result = "";
+		result = readUrl(address + "?" + query);
+                
+                if(result == null){
+                keyphrases = null;
+                }
+                else{
+                JSONObject json = new JSONObject(result);
+                
+                Iterator<?> keys = json.keys();
+			
+			while(keys.hasNext()) {
+			    String key = (String)keys.next();
+			    	keyphrases.add(key);
+
+			}
+                }
+    return keyphrases;
+    }
+    
     
     //get properties from config file
     public static String getProperty(String name) throws FileNotFoundException, IOException{
@@ -48,16 +109,21 @@ public class Functions {
     return property;
     }
     
-    public static void calculateSimilarity (MongoDB mongo, List<MainDocument> documents, RealMatrix tfIdfMatrix, RealMatrix topicMatrix) throws IOException {
+    public static void calculateSimilarity (MongoDB mongo, List<MainDocument> documents, RealMatrix entityMatrix, RealMatrix topicMatrix, RealMatrix keyphrasesMatrix) throws IOException {
     
-        for (int i = 0; i < tfIdfMatrix.getColumnDimension(); i++) {
+        int a = entityMatrix.getColumnDimension();
+         int b = topicMatrix.getColumnDimension();
+          int c = keyphrasesMatrix.getColumnDimension();
+          int x = documents.size();
+       
+        for (int i = 0; i < entityMatrix.getColumnDimension(); i++) {
         //lista za slicne dokumente odredjenog dokumenta
         List<SimilarDocument> similarDocuments = new ArrayList<>();
            
             double sim = 0.0;
-            for (int j = 0; j < tfIdfMatrix.getColumnDimension(); j++) {
+            for (int j = 0; j < entityMatrix.getColumnDimension(); j++) {
                 SimilarDocument doc;
-                sim = getFinalSimilarity(getCosineSimilarity(i, j, tfIdfMatrix), getCosineSimilarity(i, j, topicMatrix));
+                sim = getFinalSimilarity(getCosineSimilarity(i, j, entityMatrix), getCosineSimilarity(i, j, topicMatrix), getCosineSimilarity(i, j, keyphrasesMatrix));
 
                 doc = new SimilarDocument(documents.get(i).getId(), documents.get(i).getTitle(), documents.get(j).getTitle(), sim, documents.get(j).getContent());
                 similarDocuments.add(doc);
@@ -81,17 +147,19 @@ public class Functions {
     }
  
     //create dictionary of unique entities, topics..
-    public static TextRazorObject createMainDictionary(List<MainDocument> documents) {
+    public static AnalysisObject createMainDictionary(List<MainDocument> documents) {
         
                 List<String> entityDictionary = new ArrayList<String>();
                 List<String> topicDictionary = new ArrayList<String>();
-                List<List<String>> dictionaries = new ArrayList<List<String>>();
-                TextRazorObject tro = null;
+                List<String> keyphrasesDictionary = new ArrayList<String>();
+                List<List<String>> entityDictionaries = new ArrayList<List<String>>();
+                List<List<String>> keyphrasesDictionaries = new ArrayList<List<String>>();
+                AnalysisObject tro = null;
                 
                 //create main entityDictionary, topicDictionary of unique terms using list of entities, topics of each document
 		for (MainDocument doc : documents) {
                     
-                    if (doc.getEntities() != null && doc.getTopics() != null){
+                    if (doc.getEntities() != null && doc.getTopics() != null && doc.getKeyphrases()!= null){
                         for (String entity : doc.getEntities()) {
 			
 			    if (!entityDictionary.contains(entity)) {
@@ -104,33 +172,69 @@ public class Functions {
 			    	topicDictionary.add(topic);
 			    }
                       }
-                      dictionaries.add(doc.getEntities());
+                      
+                         for (String keyphrase : doc.getKeyphrases()) {
+			
+			    if (!keyphrasesDictionary.contains(keyphrase)) {
+			    	keyphrasesDictionary.add(keyphrase);
+			    }
+                      }
+                      
+                      entityDictionaries.add(doc.getEntities());
+                      keyphrasesDictionaries.add(doc.getKeyphrases());
                     }
                   
 		}    
                 
-                tro = new TextRazorObject (entityDictionary, topicDictionary, dictionaries);
+                tro = new AnalysisObject (entityDictionary, topicDictionary, keyphrasesDictionary, entityDictionaries, keyphrasesDictionaries);
                 
     return tro;
     }
     
     
-    public static RealMatrix createBasicMatrix(TextRazorObject tro) {
+     //create dictionary of unique keyphrases..
+    public static List<String> createKeyphrasesDictionary(List<MainDocument> documents) {
+        
+                List<String> keyphrasesDictionary = new ArrayList<String>();
+                
+                //da li postoji podudaranje tj. da li postoje identicne fraze za razlicite tekstove - DA
+                List<String> provera = new ArrayList<String>();
+                
+                //create main entityDictionary, topicDictionary of unique terms using list of entities, topics of each document
+		for (MainDocument doc : documents) {
+                    
+                    if (doc.getKeyphrases()!= null){
+                        for (String keyphrase : doc.getKeyphrases()) {
+			
+			    if (!keyphrasesDictionary.contains(keyphrase)) {
+			    	keyphrasesDictionary.add(keyphrase);
+			    }
+                            provera.add(keyphrase);
+                      }
+                    }
+                  
+		}    
+                
+    return keyphrasesDictionary;
+    }
+    
+    
+    public static RealMatrix createBasicMatrix(List<String> dictionary, List<List<String>> dictionaries) {
         
 		RealMatrix basicMatrix;
                 //create matrix with where number of columns is number if documents and number of rows is number of unique entities in dictionary
-		basicMatrix = MatrixUtils.createRealMatrix(tro.getEntities().size(), tro.getDictionaries().size());
+		basicMatrix = MatrixUtils.createRealMatrix(dictionary.size(), dictionaries.size());
                 //Term Frequency in the document
 		double tf = 0;
                 int numberOfColumn = 0;
                 
                 //indicate how many times each term appears in each (dictionary of the document)
-                for (List<String> dic : tro.getDictionaries()) {
+                for (List<String> dic : dictionaries) {
                     
-                    for (int i = 0; i<tro.getEntities().size(); i++) {
+                    for (int i = 0; i<dictionary.size(); i++) {
                         
                         for (String entity : dic) {
-			  if (tro.getEntities().get(i).equalsIgnoreCase(entity)) {
+			  if (dictionary.get(i).equalsIgnoreCase(entity)) {
                               tf++;
                           }	
                         }
@@ -217,20 +321,20 @@ public class Functions {
     }
     
    
-    public static RealMatrix getTfIdfMatrix (TextRazorObject tro) throws NetworkException, AnalysisException {
+    public static RealMatrix getTfIdfMatrix (List<String> dictionary, List<List<String>> dictionaries) throws NetworkException, AnalysisException {
  
         RealMatrix basicMatrix;
-        basicMatrix = Functions.createBasicMatrix (tro);
+        basicMatrix = Functions.createBasicMatrix (dictionary, dictionaries);
         RealMatrix tfidfMatrix;
         tfidfMatrix = Functions.getTfIdf(basicMatrix);
         
     return normalize(tfidfMatrix);
     }
     
-    public static double getFinalSimilarity(double sim1, double sim2) {
+    public static double getFinalSimilarity(double sim1, double sim2, double sim3) {
         
          double sim = 0.0;
-          sim = (sim1 + sim2)/2;
+          sim = (sim1 + sim2 + sim3)/3;
     
     return sim;
     }

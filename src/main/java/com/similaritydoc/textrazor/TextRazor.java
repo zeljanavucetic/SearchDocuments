@@ -20,11 +20,11 @@ import java.util.List;
  */
 public class TextRazor {
     
-          public static TextRazorObject analyseText(String API_KEY, String text) throws NetworkException, AnalysisException{
+          public static AnalysisObject analyseText(String API_KEY, String text) throws NetworkException, AnalysisException{
             
             List<String> entities = new ArrayList<String>();
             List<String> topics = new ArrayList<String>();
-            TextRazorObject tro = null;
+            AnalysisObject tro = null;
             
             com.textrazor.TextRazor client = new com.textrazor.TextRazor(API_KEY);
 		
@@ -51,7 +51,7 @@ public class TextRazor {
                         entities.add(entity.getEntityId());
 		}
                 
-                tro = new TextRazorObject(entities, topics, null);
+                tro = new AnalysisObject(entities, topics, null, null, null);
          
         return tro;
         }

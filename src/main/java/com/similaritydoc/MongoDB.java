@@ -9,8 +9,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
+import static com.similaritydoc.Functions.getKeyphrases;
 import static com.similaritydoc.textrazor.TextRazor.analyseText;
-import com.similaritydoc.textrazor.TextRazorObject;
+import com.similaritydoc.textrazor.AnalysisObject;
 import com.textrazor.AnalysisException;
 import com.textrazor.NetworkException;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.JSONObject;
 
 /**
  *
@@ -38,14 +40,14 @@ public class MongoDB {
     public List<MainDocument> getNewDocuments() throws IOException{
        
         BasicDBObject query = new BasicDBObject("analyzed", new BasicDBObject("$exists", false)); 
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query).limit(20);
+        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
         
         List<MainDocument> documents = new ArrayList<>();
  
             for (Document document : find) {
             
                         MainDocument doc = null;
-		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"));
+		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"), (ArrayList) document.get("keyphrases"));
 			documents.add(doc);      
 	    }
         return documents;
@@ -55,7 +57,7 @@ public class MongoDB {
     public void updateDocuments() throws NetworkException, AnalysisException, IOException{
         
               String API_KEY = "";
-              TextRazorObject tro = null;
+              AnalysisObject tro = null;
 
               API_KEY =  Functions.getProperty("API_KEY"); 
         
@@ -84,15 +86,46 @@ public class MongoDB {
         
       }
     }
+    
+    
+       public void findKeyphrases() throws IOException{
+        
+        //ukoliko postoji u bazi text koji nije analiziran
+        BasicDBObject query = new BasicDBObject("keyphrases", new BasicDBObject("$exists", false)); 
+        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
+        
+        List<MainDocument> documents = new ArrayList<>();
+        List<String> phrases = null;
+        if(find != null){
+         for (Document document : find) {
+           
+           phrases = Functions.getKeyphrases(document.getString("Content"));
+            BasicDBList keyphrases = new BasicDBList();
+           if(phrases == null){
+              keyphrases = null;
+           }
+           else {
+                 for (int i =0; i<phrases.size(); i++){
+                 keyphrases.add(phrases.get(i));
+           }
+                 
+           }
+           getDatabase().getCollection(Functions.getProperty("COLLECTION1")).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("keyphrases", keyphrases)));
+           phrases = null;
+	} 
+      }
+    }
+    
+    
     public List<MainDocument> getDocuments() throws IOException{
        
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find().limit(20);
+        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find();
         List<MainDocument> documents = new ArrayList<>();
  
             for (Document document : find) {
             
                         MainDocument doc = null;
-		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"));
+		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"), (ArrayList) document.get("keyphrases"));
 			documents.add(doc);       
 	    }
         return documents;
@@ -106,7 +139,7 @@ public class MongoDB {
 		
 		for (Document document : find) {						
 					MainDocument doc = null;
-					doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"));
+					doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"), null);
                                        
 			                if (doc.getTitle().contains(name)) {
 				        documents.add(doc);

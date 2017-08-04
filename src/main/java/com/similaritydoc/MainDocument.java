@@ -19,13 +19,15 @@ public class MainDocument{
 	private String content;
         private ArrayList<String> entities = new ArrayList<String>();
         private ArrayList<String> topics  = new ArrayList<String>();
+        private ArrayList<String> keyphrases;
         
-        public MainDocument (ObjectId num, String title, String content,  ArrayList<String> entities, ArrayList<String> topics){
+        public MainDocument (ObjectId num, String title, String content,  ArrayList<String> entities, ArrayList<String> topics, ArrayList<String> keyphrases){
         this.id = num;
         this.title = title;
         this.content = content;
         this.entities = entities;
         this.topics = topics;
+        this.keyphrases=keyphrases;
         }
 
     /**
@@ -97,7 +99,19 @@ public class MainDocument{
     public void setTopics(ArrayList<String> topics) {
         this.topics = topics;
     }
-        
-        
+
+    /**
+     * @return the keyphrases
+     */
+    public ArrayList<String> getKeyphrases() {
+        return keyphrases;
+    }
+
+    /**
+     * @param keyphrases the keyphrases to set
+     */
+    public void setKeyphrases(ArrayList<String> keyphrases) {
+        this.keyphrases = keyphrases;
+    }      
 
 }
