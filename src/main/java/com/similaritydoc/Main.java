@@ -23,11 +23,6 @@ import org.bson.Document;
 public class Main {
       
     public static void main(String[] args) throws IOException, NetworkException, NetworkException, AnalysisException {
-
-         AnalysisObject tro = null;
-         RealMatrix entityMatrix;
-         RealMatrix topicMatrix;
-         RealMatrix keyphrasesMatrix;
             
       //connect to mongo database
       MongoDB mongo = new MongoDB();
