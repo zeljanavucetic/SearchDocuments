@@ -173,10 +173,10 @@ public class MongoDB {
         return documents;
     }
    
-    public List<MainDocument> getSearchResult(String name) throws IOException {
+    public List<MainDocument> getSearchResult(String name, String collection) throws IOException {
 		
                 FindIterable<Document> find = null;
-		find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find();
+		find = getDatabase().getCollection(collection).find();
 		List<MainDocument> documents = new ArrayList<>();
 		
 		for (Document document : find) {						
@@ -190,9 +190,9 @@ public class MongoDB {
         return documents;
     }
         
-    public List<SimilarDocument> getSimilarDocuments (String title) throws IOException {
+    public List<SimilarDocument> getSimilarDocuments (String title, String collection2) throws IOException {
 		FindIterable<Document> find = null;
-		find = getDatabase().getCollection(Functions.getProperty("COLLECTION2")).find(new Document("documentTitle", title));
+		find = getDatabase().getCollection(collection2).find(new Document("documentTitle", title));
 		
 		List<SimilarDocument> result = new ArrayList<>();
 				

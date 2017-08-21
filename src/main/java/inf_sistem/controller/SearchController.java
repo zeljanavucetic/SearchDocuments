@@ -5,6 +5,7 @@
  */
 package inf_sistem.controller;
 
+import com.similaritydoc.Functions;
 import com.similaritydoc.MongoDB;
 import com.similaritydoc.MainDocument;
 import com.similaritydoc.SimilarDocument;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.bson.types.ObjectId;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -38,7 +38,7 @@ public class SearchController {
 	List<MainDocument> getDocuments(@RequestParam("name") String name) throws IOException {
 
 		MongoDB db = new MongoDB();
-		List<MainDocument> result = db.getSearchResult(name);
+		List<MainDocument> result = db.getSearchResult(name, Functions.getProperty("PolitikaCollection"));
                 
             return result;
 
@@ -49,7 +49,7 @@ public class SearchController {
 	ModelAndView GetSimilarDocuments(@RequestParam("title") String title) throws IOException {
 		MongoDB db = new MongoDB();
 		Map<String, Object> map = new HashMap<>();
-		List<SimilarDocument> similarDocuments = db.getSimilarDocuments(title);
+		List<SimilarDocument> similarDocuments = db.getSimilarDocuments(title, Functions.getProperty("PolitikaCollSim"));
 		
 		map.put("title", title);
 		//map.put("content", content);
