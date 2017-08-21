@@ -5,15 +5,10 @@
  */
 package com.similaritydoc;
 
-import com.mongodb.client.MongoCollection;
 import static com.similaritydoc.Functions.*;
-import com.similaritydoc.textrazor.AnalysisObject;
 import com.textrazor.AnalysisException;
 import com.textrazor.NetworkException;
-import java.util.*;
 import java.io.*;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.bson.Document;
 
 
 /**
