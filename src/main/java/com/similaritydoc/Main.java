@@ -31,31 +31,13 @@ public class Main {
             
       //connect to mongo database
       MongoDB mongo = new MongoDB();
-
-      //insert documents into certain collection in MongoDB
-       mongo.insertDocuments(Functions.getProperty("PolitikaFile"), Functions.getProperty("PolitikaCollection"));
-   
-      //ukoliko postoji u bazi text koji nije analiziran pomocu Text Razora
-       mongo.updateDocuments(Functions.getProperty("PolitikaCollection"));
       
-      //ukoliko postoji u bazi text iz koga nizu izdvojene fraze
-       mongo.findKeyphrases(Functions.getProperty("PolitikaCollection"));
-      
-      List<MainDocument> documentsMongo = mongo.getDocuments(Functions.getProperty("PolitikaCollection"));
-      
-         tro = Functions.createMainDictionary(documentsMongo);
-         
-         topicMatrix = TopicModelMallet.getTopicDistribution(documentsMongo, tro.getTopics().size());
-         entityMatrix = getTfIdfMatrix(tro.getEntities(), tro.getEntityDictionaries());
-         keyphrasesMatrix = getTfIdfMatrix(tro.getKeyphrases(), tro.getKeyphrasesDictionaries());
-        
-        // delete existing documentSimilarity collection
-    	MongoCollection<Document> dbcoll = mongo.getDatabase().getCollection(Functions.getProperty("PolitikaCollSim"));
-   	dbcoll.drop();
-        mongo.getDatabase().createCollection(Functions.getProperty("PolitikaCollSim"));
-      
-        // calculate similarity for NEW documents in database
-        Functions.calculateSimilarity(mongo, documentsMongo, entityMatrix, topicMatrix, keyphrasesMatrix, Functions.getProperty("PolitikaCollSim"));
+      run(mongo, "PolitikaFile", "PolitikaCollection", "PolitikaCollSim");
+      run(mongo, "ScienceFile", "ScienceCollection", "ScienceCollSim");
+      run(mongo, "SportFile", "SportCollection", "SportCollSim");
         
    } 
+    
+    
+ 
 }

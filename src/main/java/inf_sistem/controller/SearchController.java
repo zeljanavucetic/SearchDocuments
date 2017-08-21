@@ -5,7 +5,6 @@
  */
 package inf_sistem.controller;
 
-import com.similaritydoc.Functions;
 import com.similaritydoc.MongoDB;
 import com.similaritydoc.MainDocument;
 import com.similaritydoc.SimilarDocument;
@@ -30,15 +29,15 @@ public class SearchController {
     @RequestMapping("/")
     public ModelAndView search() throws IOException {
       
-        return new ModelAndView("search.jsp");
+        return new ModelAndView("welcome.jsp");
     } 
     
     @RequestMapping("/GetDocuments")
 	public @ResponseBody
-	List<MainDocument> getDocuments(@RequestParam("name") String name) throws IOException {
+	List<MainDocument> getDocuments(@RequestParam("name") String name, @RequestParam("collection1") String collection1) throws IOException {
 
 		MongoDB db = new MongoDB();
-		List<MainDocument> result = db.getSearchResult(name, Functions.getProperty("PolitikaCollection"));
+		List<MainDocument> result = db.getSearchResult(name, collection1);
                 
             return result;
 
@@ -46,10 +45,10 @@ public class SearchController {
         
     @RequestMapping("/GetSimilarDocuments")
 	public @ResponseBody
-	ModelAndView GetSimilarDocuments(@RequestParam("title") String title) throws IOException {
+	ModelAndView GetSimilarDocuments(@RequestParam("title") String title, @RequestParam("collection2") String collection2) throws IOException {
 		MongoDB db = new MongoDB();
 		Map<String, Object> map = new HashMap<>();
-		List<SimilarDocument> similarDocuments = db.getSimilarDocuments(title, Functions.getProperty("PolitikaCollSim"));
+		List<SimilarDocument> similarDocuments = db.getSimilarDocuments(title, collection2);
 		
 		map.put("title", title);
 		//map.put("content", content);

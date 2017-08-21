@@ -44,20 +44,11 @@
   
   <div class="text-center">
     <h1>Recommendation System</h1>
+    <br><br>
+    
+    <h3>Welcome!</h3>
   </div>
-	<div class="row" style="padding-top:25px;">       
-        <div id="custom-search-input">
-            <div class="input-group col-md-12">
-                <input type="text" class="  search-query form-control" placeholder="Search documents" id="w-input-search" />
-                <span class="input-group-btn">
-                    <button class="btn btn-success" type="button" id="search">
-                        <span class=" glyphicon glyphicon-search"></span>
-                        <span class="glyphicon glyphicon glyphicon-refresh" id="anim"></span>
-                    </button>
-                </span>
-            </div>
-        </div>
-    </div>
+	
 
 </div><!-- /.container -->
 	<!-- script references -->

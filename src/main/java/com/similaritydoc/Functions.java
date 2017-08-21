@@ -5,6 +5,7 @@
  */
 package com.similaritydoc;
 
+import com.mongodb.client.MongoCollection;
 import com.similaritydoc.textrazor.AnalysisObject;
 import com.textrazor.AnalysisException;
 import com.textrazor.NetworkException;
@@ -32,6 +33,41 @@ import org.json.JSONObject;
  */
 public class Functions {
     
+    
+      public static void run(MongoDB mongo, String file, String collection1, String collection2) throws IOException, NetworkException, AnalysisException {
+       
+        AnalysisObject tro = null;
+        RealMatrix entityMatrix;
+        RealMatrix topicMatrix;
+        RealMatrix keyphrasesMatrix;
+       
+         //insert documents into certain collection in MongoDB
+       mongo.insertDocuments(file, collection1);
+       
+   
+      //ukoliko postoji u bazi text koji nije analiziran pomocu Text Razora
+       mongo.updateDocuments(collection1);
+      
+      //ukoliko postoji u bazi text iz koga nizu izdvojene fraze
+       mongo.findKeyphrases(collection1);
+      
+      List<MainDocument> documentsMongo = mongo.getDocuments(collection1);
+      
+         tro = createMainDictionary(documentsMongo);
+         
+         topicMatrix = TopicModelMallet.getTopicDistribution(documentsMongo, tro.getTopics().size());
+         entityMatrix = getTfIdfMatrix(tro.getEntities(), tro.getEntityDictionaries());
+         keyphrasesMatrix = getTfIdfMatrix(tro.getKeyphrases(), tro.getKeyphrasesDictionaries());
+        
+        // delete existing documentSimilarity collection
+    	MongoCollection<Document> dbcoll = mongo.getDatabase().getCollection(collection2);
+   	dbcoll.drop();
+        mongo.getDatabase().createCollection(collection2);
+      
+        // calculate similarity for NEW documents in database
+        calculateSimilarity(mongo, documentsMongo, entityMatrix, topicMatrix, keyphrasesMatrix, collection2);
+   
+   }
     
     public static String getTextFromFile(String fileName) {
 
