@@ -32,9 +32,9 @@ public class Main {
       //connect to mongo database
       MongoDB mongo = new MongoDB();
       
-      run(mongo, "PolitikaFile", "PolitikaCollection", "PolitikaCollSim");
-      run(mongo, "ScienceFile", "ScienceCollection", "ScienceCollSim");
-      run(mongo, "SportFile", "SportCollection", "SportCollSim");
+    run(mongo, Functions.getProperty("PolitikaFile"), Functions.getProperty("PolitikaCollection"), Functions.getProperty("PolitikaCollSim"));
+    run(mongo, Functions.getProperty("ScienceFile"), Functions.getProperty("ScienceCollection"), Functions.getProperty("ScienceCollSim"));
+    run(mongo, Functions.getProperty("SportFile"), Functions.getProperty("SportCollection"), Functions.getProperty("SportCollSim"));
         
    } 
     
