@@ -60,7 +60,7 @@ public class TopicModelMallet {
                  //  Note that the first parameter is passed as the sum over topics, while
                  //  the second is the parameter for a single dimension of the Dirichlet prior.
 
-		ParallelTopicModel model = new ParallelTopicModel(numTopics, 1.0, 0.01);
+		ParallelTopicModel model = new ParallelTopicModel(numTopics, 0.01*numTopics, 0.01);
 
 		model.addInstances(instances);
 

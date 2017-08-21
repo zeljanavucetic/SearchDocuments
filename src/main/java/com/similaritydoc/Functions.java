@@ -11,6 +11,7 @@ import com.textrazor.NetworkException;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,7 +32,46 @@ import org.json.JSONObject;
  */
 public class Functions {
     
-    	public static String readUrl(String urlString) throws IOException {
+    
+    public static String getTextFromFile(String fileName) {
+
+        // This will reference one line at a time
+        String line = null;
+        String text = "";
+
+        try {
+            // FileReader reads text files in the default encoding.
+            FileReader fileReader = 
+                new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = 
+                new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                //System.out.println(line);
+                text = text + " " + line ;
+            }   
+
+            // Always close files.
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "Unable to open file '" + 
+                fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file '" 
+                + fileName + "'");                  
+            // Or we could just do this: 
+            // ex.printStackTrace();
+        }
+        return text;
+    }
+    
+    public static String readUrl(String urlString) throws IOException {
 	    BufferedReader reader = null;
 	    try {
 	        URL url = new URL(urlString);
@@ -54,12 +94,12 @@ public class Functions {
 	        if (reader != null)
 	            reader.close();
 	    }
-	}
+    }
     
     //get keyphrases from text using KeyphrasesExtraction API
     public static List<String> getKeyphrases(String text) throws FileNotFoundException, IOException{
      
-        String address = "http://localhost:8081/KeyphrasesExtraction/api/hello";
+        String address = Functions.getProperty("PhraseSERVICE");
         
         List<String> keyphrases = new ArrayList<String>();
         
@@ -109,12 +149,7 @@ public class Functions {
     return property;
     }
     
-    public static void calculateSimilarity (MongoDB mongo, List<MainDocument> documents, RealMatrix entityMatrix, RealMatrix topicMatrix, RealMatrix keyphrasesMatrix) throws IOException {
-    
-        int a = entityMatrix.getColumnDimension();
-         int b = topicMatrix.getColumnDimension();
-          int c = keyphrasesMatrix.getColumnDimension();
-          int x = documents.size();
+    public static void calculateSimilarity (MongoDB mongo, List<MainDocument> documents, RealMatrix entityMatrix, RealMatrix topicMatrix, RealMatrix keyphrasesMatrix, String collection2) throws IOException {
        
         for (int i = 0; i < entityMatrix.getColumnDimension(); i++) {
         //lista za slicne dokumente odredjenog dokumenta
@@ -133,15 +168,12 @@ public class Functions {
             Collections.sort(similarDocuments);
 
             for (int k = 2; k < 12; k++) {
-            	mongo.getDatabase().getCollection(Functions.getProperty("COLLECTION2")).insertOne(new Document("documentTitle", similarDocuments.get(k).getTitle())
+            	mongo.getDatabase().getCollection(collection2).insertOne(new Document("documentTitle", similarDocuments.get(k).getTitle())
             	.append("simDocumentTitle", similarDocuments.get(k).getSimTitle())
             	.append("similarity", similarDocuments.get(k).getSimilarity())
                 .append("simDocumentContent", similarDocuments.get(k).getSimContent())
                 .append("id", similarDocuments.get(k).getId()));
             }
-
-    //setovan parametar "analyzed" da bi se  znalo za koje dokumente je proracunata slicnost
-    mongo.getDatabase().getCollection(Functions.getProperty("COLLECTION1")).updateOne(new Document("_id", documents.get(i).getId()),new Document("$set", new Document("analyzed", 1)));
     
         }   
     }
@@ -159,30 +191,38 @@ public class Functions {
                 //create main entityDictionary, topicDictionary of unique terms using list of entities, topics of each document
 		for (MainDocument doc : documents) {
                     
-                    if (doc.getEntities() != null && doc.getTopics() != null && doc.getKeyphrases()!= null){
+                    //if (doc.getEntities() != null && doc.getTopics() != null && doc.getKeyphrases()!= null){}
+                    
+                    if (doc.getEntities() != null){
                         for (String entity : doc.getEntities()) {
 			
 			    if (!entityDictionary.contains(entity)) {
 			    	entityDictionary.add(entity);
 			    }
                       }
+                    }
+                    
+                    if (doc.getTopics() != null){
                       for (String topic : doc.getTopics()) {
 			
 			    if (!topicDictionary.contains(topic)) {
 			    	topicDictionary.add(topic);
 			    }
                       }
+                    }
                       
+                     if (doc.getKeyphrases()!= null){
                          for (String keyphrase : doc.getKeyphrases()) {
 			
 			    if (!keyphrasesDictionary.contains(keyphrase)) {
 			    	keyphrasesDictionary.add(keyphrase);
 			    }
                       }
+                     }
                       
                       entityDictionaries.add(doc.getEntities());
                       keyphrasesDictionaries.add(doc.getKeyphrases());
-                    }
+                    
                   
 		}    
                 

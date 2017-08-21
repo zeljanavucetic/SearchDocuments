@@ -8,18 +8,20 @@ package com.similaritydoc;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
-import static com.similaritydoc.Functions.getKeyphrases;
 import static com.similaritydoc.textrazor.TextRazor.analyseText;
 import com.similaritydoc.textrazor.AnalysisObject;
 import com.textrazor.AnalysisException;
 import com.textrazor.NetworkException;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.json.JSONObject;
 
 /**
  *
@@ -37,24 +39,64 @@ public class MongoDB {
     }
     
     
-    public List<MainDocument> getNewDocuments() throws IOException{
+    public void insertDocuments(String file, String collection) {
        
-        BasicDBObject query = new BasicDBObject("analyzed", new BasicDBObject("$exists", false)); 
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
-        
-        List<MainDocument> documents = new ArrayList<>();
- 
-            for (Document document : find) {
-            
-                        MainDocument doc = null;
-		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"), (ArrayList) document.get("keyphrases"));
-			documents.add(doc);      
-	    }
-        return documents;
+             String zana = Functions.getTextFromFile(file);
+             FileInputStream fstream = null;
+             
+    try {
+        fstream = new FileInputStream(file);
+    } catch (FileNotFoundException e) {
+        e.printStackTrace();
+        System.out.println("file doesn't exist");
+        return;
+    }
+    BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+    // read it line by line
+    String strLine;
+        //MongoCollection<Document> newColl =   mongo.getDatabase().getCollection("hh");
+    try {
+        while ((strLine = br.readLine()) != null) {
+            // convert line by line to BSON
+            Document doc = Document.parse(strLine);
+            // insert BSONs to database
+            try {
+                getDatabase().getCollection(collection).insertOne(doc);
+            }
+            catch (MongoException e) {
+              // duplicate key
+              e.printStackTrace();
+            }
+
+
+        }
+        br.close();
+    } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+      
     }
     
     
-    public void updateDocuments() throws NetworkException, AnalysisException, IOException{
+//    public List<MainDocument> getNewDocuments() throws IOException{
+//       
+//        BasicDBObject query = new BasicDBObject("analyzed", new BasicDBObject("$exists", false)); 
+//        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
+//        
+//        List<MainDocument> documents = new ArrayList<>();
+// 
+//            for (Document document : find) {
+//            
+//                        MainDocument doc = null;
+//		        doc = new MainDocument(document.getObjectId("_id"), document.getString("Title"), document.getString("Content"), (ArrayList) document.get("entities"), (ArrayList) document.get("topics"), (ArrayList) document.get("keyphrases"));
+//			documents.add(doc);      
+//	    }
+//        return documents;
+//    }
+    
+    
+    public void updateDocuments(String collection) throws NetworkException, AnalysisException, IOException{
         
               String API_KEY = "";
               AnalysisObject tro = null;
@@ -63,7 +105,7 @@ public class MongoDB {
         
         //ukoliko postoji u bazi text koji nije analiziran
         BasicDBObject query = new BasicDBObject("entities", new BasicDBObject("$exists", false)); 
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
+        FindIterable<Document> find = getDatabase().getCollection(collection).find(query);
         
         if(find != null){
          for (Document document : find) {
@@ -79,8 +121,8 @@ public class MongoDB {
            topics.add(tro.getTopics().get(j));
            }
           
-		getDatabase().getCollection(Functions.getProperty("COLLECTION1")).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("entities", entities)));
-                getDatabase().getCollection(Functions.getProperty("COLLECTION1")).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("topics", topics)));
+		getDatabase().getCollection(collection).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("entities", entities)));
+                getDatabase().getCollection(collection).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("topics", topics)));
 
 	} //ukoliko postoji u bazi text koji nije analiziran	
         
@@ -88,11 +130,11 @@ public class MongoDB {
     }
     
     
-       public void findKeyphrases() throws IOException{
+       public void findKeyphrases(String collection) throws IOException{
         
         //ukoliko postoji u bazi text koji nije analiziran
         BasicDBObject query = new BasicDBObject("keyphrases", new BasicDBObject("$exists", false)); 
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find(query);
+        FindIterable<Document> find = getDatabase().getCollection(collection).find(query);
         
         List<MainDocument> documents = new ArrayList<>();
         List<String> phrases = null;
@@ -110,16 +152,16 @@ public class MongoDB {
            }
                  
            }
-           getDatabase().getCollection(Functions.getProperty("COLLECTION1")).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("keyphrases", keyphrases)));
+           getDatabase().getCollection(collection).updateOne(new Document("Title", document.getString("Title")),new Document("$set", new Document("keyphrases", keyphrases)));
            phrases = null;
 	} 
       }
     }
     
     
-    public List<MainDocument> getDocuments() throws IOException{
+    public List<MainDocument> getDocuments(String collection) throws IOException{
        
-        FindIterable<Document> find = getDatabase().getCollection(Functions.getProperty("COLLECTION1")).find();
+        FindIterable<Document> find = getDatabase().getCollection(collection).find();
         List<MainDocument> documents = new ArrayList<>();
  
             for (Document document : find) {
